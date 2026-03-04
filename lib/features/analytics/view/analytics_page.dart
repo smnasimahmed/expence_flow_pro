@@ -1,3 +1,4 @@
+import 'package:expence_flow_pro/features/expense/repository/expense_repository.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,6 +16,7 @@ class AnalyticsPage extends StatelessWidget {
         title: const AppText('Analytics', size: 18, weight: FontWeight.w600),
       ),
       body: GetBuilder<AnalyticsController>(
+        init: AnalyticsController(repository: Get.find<ExpenseRepository>()),
         builder: (controller) {
           if (controller.isLoading) {
             return const Center(child: CircularProgressIndicator());

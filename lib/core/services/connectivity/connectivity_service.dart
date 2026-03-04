@@ -4,14 +4,14 @@ class ConnectivityService {
   ConnectivityService._();
 
   static Future<bool> get isOnline async {
-    final result = await Connectivity().checkConnectivity();
-    return result != ConnectivityResult.none;
+    final results = await Connectivity().checkConnectivity();
+    return results.any((result) => result != ConnectivityResult.none);
   }
 
   // Listen to network changes – used by SyncController
   static Stream<bool> get onConnectivityChange {
     return Connectivity().onConnectivityChanged.map(
-      (result) => result != ConnectivityResult.none,
+      (results) => results.any((result) => result != ConnectivityResult.none),
     );
   }
 }

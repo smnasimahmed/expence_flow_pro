@@ -1,7 +1,9 @@
+import 'package:expence_flow_pro/features/expense/view/add_expense_sheet.dart';
+import 'package:expence_flow_pro/features/wallet/view/add_wallet_sheet.dart';
+import 'package:expence_flow_pro/features/wallet/view/wallets_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../features/expense/view/dashboard_page.dart';
-import '../../features/wallet/view/wallets_page.dart';
 import '../../features/analytics/view/analytics_page.dart';
 import '../constants/app_theme.dart';
 import '../widgets/app_widgets.dart';
@@ -32,9 +34,11 @@ class AppNavbar extends StatelessWidget {
               AnalyticsPage(),
             ],
           ),
+          // _fab() is called here – one FAB, unique heroTag per tab
+          floatingActionButton: _fab(context, controller.currentIndex),
           bottomNavigationBar: NavigationBar(
             backgroundColor: AppColors.surface,
-            indicatorColor: AppColors.primary.withOpacity(0.2),
+            indicatorColor: AppColors.primary.withAlpha(51),
             selectedIndex: controller.currentIndex,
             onDestinationSelected: controller.changeTab,
             destinations: const [
@@ -60,6 +64,41 @@ class AppNavbar extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget? _fab(BuildContext context, int tabIndex) {
+    switch (tabIndex) {
+      case 0:
+        return FloatingActionButton.extended(
+          heroTag: 'fab_add_expense',
+          onPressed: () => _openSheet(context, const AddExpenseSheet()),
+          backgroundColor: AppColors.primary,
+          label: const AppText('Add Expense', color: AppColors.white),
+          icon: const Icon(Icons.add, color: AppColors.white),
+        );
+      case 1:
+        return FloatingActionButton.extended(
+          heroTag: 'fab_add_wallet',
+          onPressed: () => _openSheet(context, const AddWalletSheet()),
+          backgroundColor: AppColors.primary,
+          label: const AppText('Add Wallet', color: AppColors.white),
+          icon: const Icon(Icons.add, color: AppColors.white),
+        );
+      default:
+        return null; // no FAB on analytics tab
+    }
+  }
+
+  void _openSheet(BuildContext context, Widget sheet) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => sheet,
     );
   }
 }

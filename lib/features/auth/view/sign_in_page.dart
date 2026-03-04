@@ -51,10 +51,10 @@ class SignInPage extends StatelessWidget {
   }
 
   Widget _header() {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        AppText('Welcome back 👋', size: 28, weight: FontWeight.w700),
+      children: [
+        AppText('Welcome back', size: 28, weight: FontWeight.w700),
         SizedBox(height: 8),
         AppText(
           'Sign in to continue tracking your expenses',

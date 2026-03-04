@@ -17,7 +17,9 @@ class ExpenseController extends GetxController {
   bool isPaginating = false;
   int _currentPage = 0;
   static const _pageSize = 20;
-  bool hasMore = true;
+  bool hasMore = true;  
+  String searchQuery = '';
+  String selectedFilterCategory = 'all';
 
   // ─── Form fields ──────────────────────────────────────────────────────────
   final titleController = TextEditingController();
@@ -233,5 +235,28 @@ class ExpenseController extends GetxController {
     notesController.clear();
     selectedCategoryId = 'food';
     selectedDate = DateTime.now();
+  }
+
+    // Returns filtered list based on search + category
+  List<ExpenseModel> get filteredExpenses {
+    return expenses.where((e) {
+      final matchesSearch = searchQuery.isEmpty ||
+          e.title.toLowerCase().contains(searchQuery.toLowerCase());
+
+      final matchesCategory = selectedFilterCategory == 'all' ||
+          e.categoryId == selectedFilterCategory;
+
+      return matchesSearch && matchesCategory;
+    }).toList();
+  }
+
+  void setSearch(String query) {
+    searchQuery = query;
+    update();
+  }
+
+  void setFilterCategory(String categoryId) {
+    selectedFilterCategory = categoryId;
+    update();
   }
 }

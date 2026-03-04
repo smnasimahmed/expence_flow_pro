@@ -153,7 +153,7 @@ class AddExpenseSheet extends StatelessWidget {
         }
 
         return DropdownButtonFormField<String>(
-          value: controller.selectedWalletId.isEmpty
+          initialValue: controller.selectedWalletId.isEmpty
               ? null
               : controller.selectedWalletId,
           hint: const AppText('Select Wallet', color: AppColors.grey),

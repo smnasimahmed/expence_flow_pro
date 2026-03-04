@@ -1,5 +1,5 @@
 name: expence_flow_pro
-description: "ExpenseFlow Pro – Offline-first personal finance tracker."
+description: "ExpenseFlow Pro - Offline-first personal finance tracker."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -51,6 +51,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/icons/
-    - assets/images/
+  # assets:
+  #   - assets/icons/
+  #   - assets/images/

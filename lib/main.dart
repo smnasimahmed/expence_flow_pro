@@ -1,3 +1,4 @@
+import 'package:expence_flow_pro/features/auth/binding/auth_binding.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -47,7 +48,18 @@ class ExpenseFlowApp extends StatelessWidget {
         defaultTransition: Transition.fadeIn,
         getPages: appPages,
         initialRoute: AppRoutes.initialRoute,
+        initialBinding: AuthBinding(),
+        unknownRoute: GetPage(name: '/unknown_route', page:() => const UnknownRoute(),),
       ),
     );
+  }
+}
+
+class UnknownRoute extends StatelessWidget {
+  const UnknownRoute({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(body: Center(child: Text('No Route Here, Thats an error. Please contact with Developer'),));
   }
 }

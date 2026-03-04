@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "62632677294",
+    "project_id": "expense-flow-pro-e11c8",
+    "storage_bucket": "expense-flow-pro-e11c8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:62632677294:android:3c57c6e88fd63b3d01c23f",
+        "android_client_info": {
+          "package_name": "com.example.expense_flow_pro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkNB8ZgtTf_q_VPlkHPcu3QucvwvDMQoo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -7,13 +7,19 @@ import '../repository/auth_repository.dart';
 class AuthBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut(() => AuthRepository(
-      auth: FirebaseAuth.instance,
-      firestore: FirebaseFirestore.instance,
-    ));
+    Get.put(
+      AuthRepository(
+        auth: FirebaseAuth.instance,
+        firestore: FirebaseFirestore.instance,
+      ),
+      permanent: true,
+    );
 
-    Get.lazyPut(() => AuthController(
-      repository: Get.find<AuthRepository>(),
-    ));
+    Get.put(
+      AuthController(
+        repository: Get.find<AuthRepository>(),
+      ),
+      permanent: true,
+    );
   }
 }

@@ -7,7 +7,6 @@ import '../../../core/constants/app_theme.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../core/services/storage/storage_service.dart';
 import '../../../routes/app_routes.dart';
-import '../../expense/view/add_expense_sheet.dart';
 import 'package:intl/intl.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -33,12 +32,6 @@ class DashboardPage extends StatelessWidget {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openAddExpense(context),
-        backgroundColor: AppColors.primary,
-        label: const AppText('Add Expense', color: AppColors.white),
-        icon: const Icon(Icons.add, color: AppColors.white),
-      ),
     );
   }
 
@@ -51,11 +44,11 @@ class DashboardPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppText(
-                'Hi, ${StorageService.userName.split(' ').first} 👋',
+                'Hi, ${StorageService.userName.split(' ').first}',
                 size: 22,
                 weight: FontWeight.w700,
               ),
-              const AppText("Here's your summary', size: 13, color: AppColors.grey"),
+              const AppText("Here's your summary", size: 13, color: AppColors.grey,),
             ],
           ),
           const Spacer(),
@@ -235,17 +228,7 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  void _openAddExpense(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => const AddExpenseSheet(),
-    );
-  }
+
 }
 
 // ─── Expense Tile ─────────────────────────────────────────────────────────────
@@ -263,7 +246,7 @@ class ExpenseTile extends StatelessWidget {
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
-        color: AppColors.red.withOpacity(0.2),
+        color: AppColors.red.withAlpha(51),
         child: const Icon(Icons.delete_outline, color: AppColors.red),
       ),
       onDismissed: (_) {
@@ -329,7 +312,7 @@ class ExpenseTile extends StatelessWidget {
       height: 44,
       width: 44,
       decoration: BoxDecoration(
-        color: info.$2.withOpacity(0.15),
+        color: info.$2.withAlpha(38),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Center(child: Text(info.$1, style: const TextStyle(fontSize: 20))),
@@ -351,21 +334,21 @@ class _ExpenseLoadingTile extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
+      child: const Row(
         children: [
-          const ShimmerBox(height: 44, width: 44, radius: 12),
-          const SizedBox(width: 12),
+          ShimmerBox(height: 44, width: 44, radius: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 ShimmerBox(height: 14, width: 120),
                 SizedBox(height: 8),
                 ShimmerBox(height: 12, width: 80),
               ],
             ),
           ),
-          const ShimmerBox(height: 16, width: 60),
+          ShimmerBox(height: 16, width: 60),
         ],
       ),
     );
