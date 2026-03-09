@@ -6,6 +6,8 @@ import 'package:expence_flow_pro/features/expense/view/all_expenses_page.dart';
 import 'package:expence_flow_pro/features/recurring/binding/recurring_binding.dart';
 import 'package:expence_flow_pro/features/recurring/view/recurring_page.dart';
 import 'package:expence_flow_pro/features/settings/view/settings_page.dart';
+import 'package:expence_flow_pro/features/transfer/binding/transfer_binding.dart';
+import 'package:expence_flow_pro/features/transfer/view/transfer_history_page.dart';
 import 'package:get/get.dart';
 import '../features/auth/view/sign_in_page.dart';
 import '../features/auth/view/sign_up_page.dart';
@@ -18,14 +20,8 @@ import '../core/utils/app_navbar.dart';
 import 'app_routes.dart';
 
 List<GetPage> appPages = [
-  GetPage(
-    name: AppRoutes.signIn,
-    page: () => const SignInPage(),
-  ),
-  GetPage(
-    name: AppRoutes.signUp,
-    page: () => const SignUpPage(),
-  ),
+  GetPage(name: AppRoutes.signIn, page: () => const SignInPage()),
+  GetPage(name: AppRoutes.signUp, page: () => const SignUpPage()),
   GetPage(
     name: AppRoutes.dashboard,
     page: () => const AppNavbar(),
@@ -33,38 +29,19 @@ List<GetPage> appPages = [
       ExpenseBinding(),
       WalletBinding(),
       SyncBinding(),
+      TransferBinding(), // transfer controller available from dashboard
     ],
   ),
+  GetPage(name: AppRoutes.wallets, page: () => const WalletsPage(), binding: WalletBinding()),
+  GetPage(name: AppRoutes.analytics, page: () => const AnalyticsPage(), binding: AnalyticsBinding()),
+  GetPage(name: AppRoutes.budget, page: () => const BudgetPage(), binding: BudgetBinding()),
+  GetPage(name: AppRoutes.recurring, page: () => const RecurringPage(), binding: RecurringBinding()),
+  GetPage(name: AppRoutes.settings, page: () => const SettingsPage()),
+  GetPage(name: AppRoutes.allExpenses, page: () => const AllExpensesPage()),
+  GetPage(name: AppRoutes.forgotPassword, page: () => const ForgotPasswordPage()),
   GetPage(
-    name: AppRoutes.wallets,
-    page: () => const WalletsPage(),
-    binding: WalletBinding(),
-  ),
-  GetPage(
-    name: AppRoutes.analytics,
-    page: () => const AnalyticsPage(),
-    binding: AnalyticsBinding(),
-  ),
-  GetPage(
-    name: AppRoutes.budget,
-    page: () => const BudgetPage(),
-    binding: BudgetBinding(),
-  ),
-  GetPage(
-    name: AppRoutes.recurring,
-    page: () => const RecurringPage(),
-    binding: RecurringBinding(),
-  ),
-  GetPage(
-    name: AppRoutes.settings,
-    page: () => const SettingsPage(),
-  ),
-  GetPage(
-    name: AppRoutes.allExpenses,
-    page: () => const AllExpensesPage(),
-  ),
-  GetPage(
-    name: AppRoutes.forgotPassword,
-    page: () => const ForgotPasswordPage(),
+    name: AppRoutes.transferHistory,
+    page: () => const TransferHistoryPage(),
+    binding: TransferBinding(),
   ),
 ];

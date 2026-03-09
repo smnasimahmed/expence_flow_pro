@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../repository/wallet_repository.dart';
 import '../model/wallet_model.dart';
+import '../../analytics/controller/analytics_controller.dart';
 import '../../../core/services/storage/storage_service.dart';
 import '../../../core/constants/app_strings.dart';
 
@@ -9,7 +10,7 @@ class WalletController extends GetxController {
   final WalletRepository _repository;
 
   WalletController({required WalletRepository repository})
-    : _repository = repository;
+      : _repository = repository;
 
   // ─── State ────────────────────────────────────────────────────────────────
   List<WalletModel> wallets = [];
@@ -24,7 +25,6 @@ class WalletController extends GetxController {
 
   // ─── Calculated ───────────────────────────────────────────────────────────
 
-  // Total across all wallets – shown on dashboard
   double get totalBalance => wallets.fold(0, (sum, w) => sum + w.balance);
 
   // ─── Load ─────────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ class WalletController extends GetxController {
     try {
       wallets = await _repository.getWallets(StorageService.userId);
 
-      // Calculate live balance for each wallet
+      // Calculate live balance for each wallet (includes transfers)
       for (var i = 0; i < wallets.length; i++) {
         wallets[i].balance = await _repository.calculateBalance(wallets[i].id);
       }
@@ -65,13 +65,16 @@ class WalletController extends GetxController {
         color: selectedColor,
       );
 
-      await _repository.saveLocally(wallet);
+      // Save locally and push to Firestore instantly if online
+      await _repository.saveAndSync(wallet);
       wallet.balance = wallet.initialBalance;
       wallets.add(wallet);
 
       _clearForm();
       Get.back();
       Get.snackbar('Done', 'Wallet created ✓');
+
+      _refreshAnalytics();
     } catch (e) {
       Get.snackbar('Error', AppStrings.somethingWentWrong);
     } finally {
@@ -83,32 +86,33 @@ class WalletController extends GetxController {
   // ─── Delete ───────────────────────────────────────────────────────────────
 
   Future<void> deleteWallet(String walletId) async {
-    // Only delete if no transactions attached
     final wallet = wallets.firstWhereOrNull((w) => w.id == walletId);
     if (wallet == null) return;
 
     if (wallet.balance != wallet.initialBalance) {
-      Get.snackbar(
-        'Cannot Delete',
-        'Remove all transactions in this wallet first',
-      );
+      Get.snackbar('Cannot Delete', 'Remove all transactions in this wallet first');
       return;
     }
 
-    await _repository.softDelete(walletId);
+    // Hard delete: moves to deleted_wallets table + syncs to Firestore if online
+    await _repository.hardDelete(wallet);
     wallets.removeWhere((w) => w.id == walletId);
     update();
+
+    _refreshAnalytics();
+    Get.snackbar('Wallet Deleted', wallet.name);
   }
 
-  void setType(WalletType type) {
-    selectedType = type;
-    update();
+  // ─── Refresh analytics after wallet changes ────────────────────────────────
+
+  void _refreshAnalytics() {
+    if (Get.isRegistered<AnalyticsController>()) {
+      Get.find<AnalyticsController>().loadAnalytics();
+    }
   }
 
-  void setColor(String color) {
-    selectedColor = color;
-    update();
-  }
+  void setType(WalletType type) { selectedType = type; update(); }
+  void setColor(String color) { selectedColor = color; update(); }
 
   // ─── Lifecycle ────────────────────────────────────────────────────────────
 

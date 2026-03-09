@@ -79,7 +79,8 @@ class AppButton extends StatelessWidget {
         onPressed: isLoading ? null : onPressed,
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: AppColors.primary),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           minimumSize: const Size(double.infinity, 52),
         ),
         child: _child(),
@@ -97,7 +98,8 @@ class AppButton extends StatelessWidget {
       return const SizedBox(
         height: 20,
         width: 20,
-        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
+        child:
+            CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
       );
     }
     return Text(label);

@@ -83,7 +83,7 @@ class SettingsPage extends StatelessWidget {
     final currencies = ['USD', 'EUR', 'GBP', 'BDT', 'INR', 'JPY'];
 
     return GetBuilder<SettingsController>(
-      init: SettingsController(),
+      
       builder: (controller) {
         return _SettingsTile(
           icon: Icons.attach_money,

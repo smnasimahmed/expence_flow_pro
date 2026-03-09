@@ -13,12 +13,11 @@ class AppRoutes {
   static const recurring = '/recurring';
   static const settings = '/settings';
   static const allExpenses = '/all-expenses';
+  static const transferHistory = '/transfer-history'; // new
 
-  // On app start: check if user is remembered, navigate accordingly
   static String get initialRoute {
     final hasUser = StorageService.userId.isNotEmpty;
     final rememberMe = StorageService.rememberMe;
-
     if (hasUser && rememberMe) return dashboard;
     return signIn;
   }

@@ -31,6 +31,15 @@ class AppStrings {
   // Wallet
   static const addWallet = 'Add Wallet';
   static const totalBalance = 'Total Balance';
+  static const walletDeleted = 'Wallet deleted';
+
+  // Transfer
+  static const transfer = 'Transfer';
+  static const transferHistory = 'Transfer History';
+  static const newTransfer = 'New Transfer';
+  static const fromWallet = 'From Wallet';
+  static const toWallet = 'To Wallet';
+  static const transferDone = 'Transfer complete ✓';
 
   // Budget
   static const budget = 'Budget';

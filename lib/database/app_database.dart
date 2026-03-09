@@ -25,6 +25,23 @@ class Expenses extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+// Tombstone table — expenses deleted by the user live here until synced to Firestore
+class DeletedExpenses extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get title => text()();
+  RealColumn get amount => real()();
+  TextColumn get categoryId => text()();
+  TextColumn get walletId => text()();
+  DateTimeColumn get date => dateTime()();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get deletedAt => dateTime()();
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 class Wallets extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text()();
@@ -34,6 +51,37 @@ class Wallets extends Table {
   TextColumn get color => text().withDefault(const Constant('#6C63FF'))();
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
   BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get lastModified => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// Tombstone table — deleted wallets live here until synced
+class DeletedWallets extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get name => text()();
+  TextColumn get type => text()();
+  RealColumn get initialBalance => real()();
+  TextColumn get color => text()();
+  DateTimeColumn get deletedAt => dateTime()();
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+// Wallet-to-wallet money transfer history
+class WalletTransfers extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get fromWalletId => text()();
+  TextColumn get toWalletId => text()();
+  RealColumn get amount => real()();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get date => dateTime()();
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
   DateTimeColumn get lastModified => dateTime()();
 
   @override
@@ -84,12 +132,21 @@ class Categories extends Table {
 
 // ─── Database ─────────────────────────────────────────────────────────────────
 
-@DriftDatabase(tables: [Expenses, Wallets, Budgets, Recurrings, Categories])
+@DriftDatabase(tables: [
+  Expenses,
+  DeletedExpenses,
+  Wallets,
+  DeletedWallets,
+  WalletTransfers,
+  Budgets,
+  Recurrings,
+  Categories,
+])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -97,60 +154,26 @@ class AppDatabase extends _$AppDatabase {
       await m.createAll();
       await _seedCategories();
     },
+    onUpgrade: (m, from, to) async {
+      // v1 -> v2: add tombstone tables and transfers
+      if (from < 2) {
+        await m.createTable(deletedExpenses);
+        await m.createTable(deletedWallets);
+        await m.createTable(walletTransfers);
+      }
+    },
   );
 
-  // ─── Seed default categories on first run ──────────────────────────────────
   Future<void> _seedCategories() async {
     final defaultCategories = [
-      CategoriesCompanion.insert(
-        id: 'food',
-        name: 'Food & Drink',
-        icon: '🍔',
-        color: '#FF6B6B',
-      ),
-      CategoriesCompanion.insert(
-        id: 'transport',
-        name: 'Transport',
-        icon: '🚗',
-        color: '#4ECDC4',
-      ),
-      CategoriesCompanion.insert(
-        id: 'shopping',
-        name: 'Shopping',
-        icon: '🛍',
-        color: '#FFBE0B',
-      ),
-      CategoriesCompanion.insert(
-        id: 'health',
-        name: 'Health',
-        icon: '💊',
-        color: '#06D6A0',
-      ),
-      CategoriesCompanion.insert(
-        id: 'entertainment',
-        name: 'Entertainment',
-        icon: '🎮',
-        color: '#FF006E',
-      ),
-      CategoriesCompanion.insert(
-        id: 'bills',
-        name: 'Bills',
-        icon: '🧾',
-        color: '#3A86FF',
-      ),
-      CategoriesCompanion.insert(
-        id: 'salary',
-        name: 'Salary',
-        icon: '💰',
-        color: '#4CAF82',
-        isIncome: const Value(true),
-      ),
-      CategoriesCompanion.insert(
-        id: 'other',
-        name: 'Other',
-        icon: '📦',
-        color: '#8E8E9E',
-      ),
+      CategoriesCompanion.insert(id: 'food', name: 'Food & Drink', icon: '🍔', color: '#FF6B6B'),
+      CategoriesCompanion.insert(id: 'transport', name: 'Transport', icon: '🚗', color: '#4ECDC4'),
+      CategoriesCompanion.insert(id: 'shopping', name: 'Shopping', icon: '🛍', color: '#FFBE0B'),
+      CategoriesCompanion.insert(id: 'health', name: 'Health', icon: '💊', color: '#06D6A0'),
+      CategoriesCompanion.insert(id: 'entertainment', name: 'Entertainment', icon: '🎮', color: '#FF006E'),
+      CategoriesCompanion.insert(id: 'bills', name: 'Bills', icon: '🧾', color: '#3A86FF'),
+      CategoriesCompanion.insert(id: 'salary', name: 'Salary', icon: '💰', color: '#4CAF82', isIncome: const Value(true)),
+      CategoriesCompanion.insert(id: 'other', name: 'Other', icon: '📦', color: '#8E8E9E'),
     ];
 
     for (final cat in defaultCategories) {

@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import '../../expense/controller/expense_controller.dart';
 import '../../wallet/controller/wallet_controller.dart';
 import '../../expense/model/expense_model.dart';
+import '../../transfer/view/transfer_sheet.dart';
+import '../../settings/controller/settings_controller.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../core/services/storage/storage_service.dart';
@@ -43,12 +45,8 @@ class DashboardPage extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppText(
-                'Hi, ${StorageService.userName.split(' ').first}',
-                size: 22,
-                weight: FontWeight.w700,
-              ),
-              const AppText("Here's your summary", size: 13, color: AppColors.grey,),
+              AppText('Hi, ${StorageService.userName.split(' ').first}', size: 22, weight: FontWeight.w700),
+              const AppText("Here's your summary", size: 13, color: AppColors.grey),
             ],
           ),
           const Spacer(),
@@ -66,61 +64,58 @@ class DashboardPage extends StatelessWidget {
   }
 
   Widget _balanceCard() {
-    return GetBuilder<WalletController>(
-      builder: (controller) {
-        return Container(
-          margin: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.cardGradientStart, AppColors.cardGradientEnd],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const AppText(
-                'Total Balance',
-                size: 13,
-                color: Colors.white70,
+    // Listen to both WalletController (balance amount) and SettingsController (currency symbol)
+    return GetBuilder<SettingsController>(
+      builder: (settings) {
+        return GetBuilder<WalletController>(
+          builder: (wallets) {
+            return Container(
+              margin: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.cardGradientStart, AppColors.cardGradientEnd],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
               ),
-              const SizedBox(height: 8),
-              controller.isLoading
-                  ? const ShimmerBox(height: 36, width: 160)
-                  : AppText(
-                      '\$${controller.totalBalance.toStringAsFixed(2)}',
-                      size: 32,
-                      weight: FontWeight.w700,
-                    ),
-              const SizedBox(height: 16),
-              Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final wallet in controller.wallets.take(3))
-                    Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white24,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: AppText(wallet.name, size: 11, color: AppColors.white),
-                    ),
-                  if (controller.wallets.length > 3)
-                    GestureDetector(
-                      onTap: () => Get.toNamed(AppRoutes.wallets),
-                      child: const AppText(
-                        '+ more',
-                        size: 11,
-                        color: Colors.white70,
-                      ),
-                    ),
+                  const AppText('Total Balance', size: 13, color: Colors.white70),
+                  const SizedBox(height: 8),
+                  wallets.isLoading
+                      ? const ShimmerBox(height: 36, width: 160)
+                      : AppText(
+                          '${settings.symbol}${wallets.totalBalance.toStringAsFixed(2)}',
+                          size: 32,
+                          weight: FontWeight.w700,
+                        ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      for (final wallet in wallets.wallets.take(3))
+                        Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white24,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: AppText(wallet.name, size: 11, color: AppColors.white),
+                        ),
+                      if (wallets.wallets.length > 3)
+                        GestureDetector(
+                          onTap: () => Get.toNamed(AppRoutes.wallets),
+                          child: const AppText('+ more', size: 11, color: Colors.white70),
+                        ),
+                    ],
+                  ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -131,39 +126,25 @@ class DashboardPage extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       child: Row(
         children: [
-          _actionChip(
-            icon: Icons.account_balance_wallet_outlined,
-            label: 'Wallets',
-            onTap: () => Get.toNamed(AppRoutes.wallets),
-          ),
-          const SizedBox(width: 12),
-          _actionChip(
-            icon: Icons.pie_chart_outline,
-            label: 'Budget',
-            onTap: () => Get.toNamed(AppRoutes.budget),
-          ),
-          const SizedBox(width: 12),
-          _actionChip(
-            icon: Icons.bar_chart,
-            label: 'Analytics',
-            onTap: () => Get.toNamed(AppRoutes.analytics),
-          ),
-          const SizedBox(width: 12),
-          _actionChip(
-            icon: Icons.repeat,
-            label: 'Recurring',
-            onTap: () => Get.toNamed(AppRoutes.recurring),
-          ),
+          _actionChip(icon: Icons.account_balance_wallet_outlined, label: 'Wallets', onTap: () => Get.toNamed(AppRoutes.wallets)),
+          const SizedBox(width: 10),
+          _actionChip(icon: Icons.swap_horiz, label: 'Transfer', onTap: () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => const TransferSheet(),
+          )),
+          const SizedBox(width: 10),
+          // Budget replaces Analytics here — analytics is accessible via the bottom nav tab
+          _actionChip(icon: Icons.pie_chart_outline, label: 'Budget', onTap: () => Get.toNamed(AppRoutes.budget)),
+          const SizedBox(width: 10),
+          _actionChip(icon: Icons.repeat, label: 'Recurring', onTap: () => Get.toNamed(AppRoutes.recurring)),
         ],
       ),
     );
   }
 
-  Widget _actionChip({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
+  Widget _actionChip({required IconData icon, required String label, required VoidCallback onTap}) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -215,7 +196,6 @@ class DashboardPage extends StatelessWidget {
         return SliverList(
           delegate: SliverChildBuilderDelegate(
             (_, i) {
-              // Load more when reaching the end
               if (i == controller.expenses.length - 1 && controller.hasMore) {
                 controller.loadExpenses();
               }
@@ -227,15 +207,12 @@ class DashboardPage extends StatelessWidget {
       },
     );
   }
-
-
 }
 
 // ─── Expense Tile ─────────────────────────────────────────────────────────────
 
 class ExpenseTile extends StatelessWidget {
   final ExpenseModel expense;
-
   const ExpenseTile({super.key, required this.expense});
 
   @override
@@ -249,9 +226,7 @@ class ExpenseTile extends StatelessWidget {
         color: AppColors.red.withAlpha(51),
         child: const Icon(Icons.delete_outline, color: AppColors.red),
       ),
-      onDismissed: (_) {
-        Get.find<ExpenseController>().deleteExpense(expense.id);
-      },
+      onDismissed: (_) => Get.find<ExpenseController>().deleteExpense(expense.id),
       child: Container(
         margin: const EdgeInsets.fromLTRB(24, 0, 24, 12),
         padding: const EdgeInsets.all(16),
@@ -267,26 +242,19 @@ class ExpenseTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppText(
-                    expense.title,
-                    size: 14,
-                    weight: FontWeight.w500,
-                    maxLines: 1,
-                  ),
-                  AppText(
-                    DateFormat('MMM dd, yyyy').format(expense.date),
-                    size: 12,
-                    color: AppColors.grey,
-                    top: 2,
-                  ),
+                  AppText(expense.title, size: 14, weight: FontWeight.w500, maxLines: 1),
+                  AppText(DateFormat('MMM dd, yyyy').format(expense.date), size: 12, color: AppColors.grey, top: 2),
                 ],
               ),
             ),
-            AppText(
-              '-\$${expense.amount.toStringAsFixed(2)}',
-              size: 15,
-              weight: FontWeight.w600,
-              color: AppColors.red,
+            // Currency symbol from SettingsController
+            GetBuilder<SettingsController>(
+              builder: (settings) => AppText(
+                '-${settings.symbol}${expense.amount.toStringAsFixed(2)}',
+                size: 15,
+                weight: FontWeight.w600,
+                color: AppColors.red,
+              ),
             ),
           ],
         ),
@@ -330,10 +298,7 @@ class _ExpenseLoadingTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.fromLTRB(24, 0, 24, 12),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16)),
       child: const Row(
         children: [
           ShimmerBox(height: 44, width: 44, radius: 12),
@@ -368,19 +333,9 @@ class _EmptyExpenses extends StatelessWidget {
         children: [
           Text('💸', style: TextStyle(fontSize: 48)),
           SizedBox(height: 16),
-          AppText(
-            'No expenses yet',
-            size: 16,
-            weight: FontWeight.w500,
-            color: AppColors.grey,
-          ),
+          AppText('No expenses yet', size: 16, weight: FontWeight.w500, color: AppColors.grey),
           SizedBox(height: 8),
-          AppText(
-            'Tap + to add your first expense',
-            size: 13,
-            color: AppColors.grey,
-            align: TextAlign.center,
-          ),
+          AppText('Tap + to add your first expense', size: 13, color: AppColors.grey, align: TextAlign.center),
         ],
       ),
     );

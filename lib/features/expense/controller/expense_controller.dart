@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../repository/expense_repository.dart';
 import '../model/expense_model.dart';
+import '../../analytics/controller/analytics_controller.dart';
+import '../../wallet/controller/wallet_controller.dart';
 import '../../../core/services/storage/storage_service.dart';
 import '../../../core/constants/app_strings.dart';
 
@@ -9,7 +11,7 @@ class ExpenseController extends GetxController {
   final ExpenseRepository _repository;
 
   ExpenseController({required ExpenseRepository repository})
-    : _repository = repository;
+      : _repository = repository;
 
   // ─── State ────────────────────────────────────────────────────────────────
   List<ExpenseModel> expenses = [];
@@ -17,7 +19,7 @@ class ExpenseController extends GetxController {
   bool isPaginating = false;
   int _currentPage = 0;
   static const _pageSize = 20;
-  bool hasMore = true;  
+  bool hasMore = true;
   String searchQuery = '';
   String selectedFilterCategory = 'all';
 
@@ -88,20 +90,21 @@ class ExpenseController extends GetxController {
         categoryId: selectedCategoryId,
         walletId: selectedWalletId,
         date: selectedDate,
-        notes: notesController.text.trim().isEmpty
-            ? null
-            : notesController.text.trim(),
+        notes: notesController.text.trim().isEmpty ? null : notesController.text.trim(),
       );
 
-      // Save locally first (offline-first)
-      await _repository.saveLocally(expense);
+      // Save locally and push to Firestore instantly if online
+      await _repository.saveAndSync(expense);
 
-      // Add to the top of list immediately (optimistic update)
+      // Add to top of list immediately (optimistic update)
       expenses.insert(0, expense);
 
       _clearForm();
-      Get.back(); // Close add expense sheet
+      Get.back();
       Get.snackbar('Done', 'Expense added ✓');
+
+      // Refresh wallet balances and analytics so everything stays in sync
+      _refreshDependentControllers();
     } catch (e) {
       Get.snackbar('Error', AppStrings.somethingWentWrong);
     } finally {
@@ -128,18 +131,19 @@ class ExpenseController extends GetxController {
         categoryId: selectedCategoryId,
         walletId: selectedWalletId,
         date: selectedDate,
-        notes: notesController.text.trim().isEmpty
-            ? null
-            : notesController.text.trim(),
+        notes: notesController.text.trim().isEmpty ? null : notesController.text.trim(),
         isSynced: false,
       );
 
-      await _repository.saveLocally(updated);
+      // Save and sync instantly
+      await _repository.saveAndSync(updated);
       expenses[index] = updated;
 
       _clearForm();
       Get.back();
       Get.snackbar('Done', 'Expense updated ✓');
+
+      _refreshDependentControllers();
     } catch (e) {
       Get.snackbar('Error', AppStrings.somethingWentWrong);
     } finally {
@@ -160,28 +164,39 @@ class ExpenseController extends GetxController {
     expenses.removeAt(index);
     update();
 
-    await _repository.softDelete(expenseId);
+    // Hard delete: moves to deleted_expenses table + syncs to Firestore if online
+    await _repository.hardDelete(deletedExpense);
 
-    // Show undo snackbar
+    _refreshDependentControllers();
+
+    // Show undo snackbar — undo only works within the snackbar duration (before next sync)
     Get.snackbar(
       AppStrings.expenseDeleted,
       deletedExpense.title,
       mainButton: TextButton(
-        onPressed: () => _undoDelete(expenseId, index, deletedExpense),
+        onPressed: () => _undoDelete(index, deletedExpense),
         child: const Text(AppStrings.undo),
       ),
       duration: const Duration(seconds: 5),
     );
   }
 
-  Future<void> _undoDelete(
-    String expenseId,
-    int index,
-    ExpenseModel expense,
-  ) async {
-    await _repository.undoDelete(expenseId);
+  Future<void> _undoDelete(int index, ExpenseModel expense) async {
+    await _repository.restoreDeleted(expense);
     expenses.insert(index, expense);
     update();
+    _refreshDependentControllers();
+  }
+
+  // ─── Refresh dashboard and analytics after any CRUD ───────────────────────
+
+  void _refreshDependentControllers() {
+    if (Get.isRegistered<WalletController>()) {
+      Get.find<WalletController>().loadWallets();
+    }
+    if (Get.isRegistered<AnalyticsController>()) {
+      Get.find<AnalyticsController>().loadAnalytics();
+    }
   }
 
   // ─── Pre-fill form for edit ───────────────────────────────────────────────
@@ -196,20 +211,9 @@ class ExpenseController extends GetxController {
     update();
   }
 
-  void setCategory(String id) {
-    selectedCategoryId = id;
-    update();
-  }
-
-  void setWallet(String id) {
-    selectedWalletId = id;
-    update();
-  }
-
-  void setDate(DateTime date) {
-    selectedDate = date;
-    update();
-  }
+  void setCategory(String id) { selectedCategoryId = id; update(); }
+  void setWallet(String id) { selectedWalletId = id; update(); }
+  void setDate(DateTime date) { selectedDate = date; update(); }
 
   // ─── Lifecycle ────────────────────────────────────────────────────────────
 
@@ -227,7 +231,20 @@ class ExpenseController extends GetxController {
     super.onClose();
   }
 
-  // ─── Private ──────────────────────────────────────────────────────────────
+  // ─── Filter ───────────────────────────────────────────────────────────────
+
+  List<ExpenseModel> get filteredExpenses {
+    return expenses.where((e) {
+      final matchesSearch = searchQuery.isEmpty ||
+          e.title.toLowerCase().contains(searchQuery.toLowerCase());
+      final matchesCategory =
+          selectedFilterCategory == 'all' || e.categoryId == selectedFilterCategory;
+      return matchesSearch && matchesCategory;
+    }).toList();
+  }
+
+  void setSearch(String query) { searchQuery = query; update(); }
+  void setFilterCategory(String categoryId) { selectedFilterCategory = categoryId; update(); }
 
   void _clearForm() {
     titleController.clear();
@@ -235,28 +252,5 @@ class ExpenseController extends GetxController {
     notesController.clear();
     selectedCategoryId = 'food';
     selectedDate = DateTime.now();
-  }
-
-    // Returns filtered list based on search + category
-  List<ExpenseModel> get filteredExpenses {
-    return expenses.where((e) {
-      final matchesSearch = searchQuery.isEmpty ||
-          e.title.toLowerCase().contains(searchQuery.toLowerCase());
-
-      final matchesCategory = selectedFilterCategory == 'all' ||
-          e.categoryId == selectedFilterCategory;
-
-      return matchesSearch && matchesCategory;
-    }).toList();
-  }
-
-  void setSearch(String query) {
-    searchQuery = query;
-    update();
-  }
-
-  void setFilterCategory(String categoryId) {
-    selectedFilterCategory = categoryId;
-    update();
   }
 }
