@@ -5,7 +5,7 @@ import '../../../core/services/log/app_log.dart';
 import '../model/expense_model.dart';
 
 // Repository: one place for all expense data operations.
-// Controller calls repository → repository talks to Drift or Firestore.
+// Controller calls repository -> repository talks to Drift or Firestore.
 class ExpenseRepository {
   final AppDatabase _db;
   final FirebaseFirestore _firestore;

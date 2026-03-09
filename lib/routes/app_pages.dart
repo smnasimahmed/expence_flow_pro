@@ -1,4 +1,5 @@
 import 'package:expence_flow_pro/features/auth/view/forgot_password_page.dart';
+import 'package:expence_flow_pro/features/sync/binding/sync_binding.dart';
 import 'package:expence_flow_pro/features/budget/binding/budget_binding.dart';
 import 'package:expence_flow_pro/features/budget/view/budget_page.dart';
 import 'package:expence_flow_pro/features/expense/view/all_expenses_page.dart';
@@ -31,6 +32,7 @@ List<GetPage> appPages = [
     bindings: [
       ExpenseBinding(),
       WalletBinding(),
+      SyncBinding(),
     ],
   ),
   GetPage(

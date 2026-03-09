@@ -1,12 +1,12 @@
 import 'package:get/get.dart';
-import '../../../core/services/connectivity/connectivity_service.dart';
-import '../../../core/services/storage/storage_service.dart';
-import '../../../core/services/log/app_log.dart';
-import '../../../core/constants/app_strings.dart';
-import '../budget/controller/budget_controller.dart';
-import '../expense/repository/expense_repository.dart';
-import '../recurring/controller/recurring_controller.dart';
-import '../wallet/repository/wallet_repository.dart';
+import '../../../../core/services/connectivity/connectivity_service.dart';
+import '../../../../core/services/storage/storage_service.dart';
+import '../../../../core/services/log/app_log.dart';
+import '../../../../core/constants/app_strings.dart';
+import '../../budget/controller/budget_controller.dart';
+import '../../expense/repository/expense_repository.dart';
+import '../../recurring/controller/recurring_controller.dart';
+import '../../wallet/repository/wallet_repository.dart';
 
 // SyncController is the "brain" that coordinates all push/pull operations.
 // It runs automatically when connectivity returns.
@@ -39,7 +39,7 @@ class SyncController extends GetxController {
   void _listenToConnectivity() {
     ConnectivityService.onConnectivityChange.listen((isOnline) {
       if (isOnline) {
-        appLog('Back online → starting sync', source: 'SyncController');
+        appLog('Back online -> starting sync', source: 'SyncController');
         syncAll();
       }
     });
@@ -85,7 +85,7 @@ class SyncController extends GetxController {
     }
   }
 
-  // ─── Push (local → Firestore) ─────────────────────────────────────────────
+  // ─── Push (local -> Firestore) ─────────────────────────────────────────────
 
   Future<void> _pushExpenses(String userId) async {
     final unsynced = await _expenseRepo.getUnsynced(userId);
@@ -119,7 +119,7 @@ class SyncController extends GetxController {
     }
   }
 
-  // ─── Pull (Firestore → local) ─────────────────────────────────────────────
+  // ─── Pull (Firestore -> local) ─────────────────────────────────────────────
   // Conflict resolution: latest lastModified wins
 
   Future<void> _pullExpenses(String userId) async {

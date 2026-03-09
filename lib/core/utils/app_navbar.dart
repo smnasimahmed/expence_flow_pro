@@ -34,8 +34,8 @@ class AppNavbar extends StatelessWidget {
               AnalyticsPage(),
             ],
           ),
-          // _fab() is called here – one FAB, unique heroTag per tab
-          floatingActionButton: _fab(context, controller.currentIndex),
+          // _floatingActionButton() is called here – one FAB, unique heroTag per tab
+          floatingActionButton: _floatingActionButton(context, controller.currentIndex),
           bottomNavigationBar: NavigationBar(
             backgroundColor: AppColors.surface,
             indicatorColor: AppColors.primary.withAlpha(51),
@@ -67,7 +67,7 @@ class AppNavbar extends StatelessWidget {
     );
   }
 
-  Widget? _fab(BuildContext context, int tabIndex) {
+  Widget? _floatingActionButton(BuildContext context, int tabIndex) {
     switch (tabIndex) {
       case 0:
         return FloatingActionButton.extended(
