@@ -7,14 +7,14 @@ A personal finance tracker built with Flutter — offline-first, Firebase-synced
 ## Screenshots
 
 <p align="center">
-  <img src="screenshots/pic1.png" width="200">
-  <img src="screenshots/pic2.png" width="200">
-  <img src="screenshots/pic3.png" width="200">
+  <img src="screenshots/home.png" width="200">
+  <img src="screenshots/wallet.png" width="200">
+  <img src="screenshots/analytics.png" width="200">
 </p>
 
 <p align="center">
-  <img src="screenshots/pic4.png" width="200">
-  <img src="screenshots/pic5.png" width="200">
+  <img src="screenshots/budget.png" width="200">
+  <img src="screenshots/settings.png" width="200">
 </p>
 
 ---
