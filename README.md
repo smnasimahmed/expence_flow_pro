@@ -155,9 +155,3 @@ service cloud.firestore {
 4. Push and open a PR against `main`
 
 Keep controllers thin — business logic belongs in repositories. If you're adding a new feature, follow the existing `binding / controller / model / repository / view` structure.
-
----
-
-## License
-
-MIT
