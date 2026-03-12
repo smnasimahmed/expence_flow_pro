@@ -62,21 +62,21 @@ class WalletRepository {
           ..where((e) => e.walletId.equals(walletId) & e.isDeleted.equals(false)))
         .get();
 
-    final totalExpenses = expenseRows.fold<double>(0, (sum, e) => sum + e.amount);
+    final totalExpenses = expenseRows.fold<double>(0, (num sum, e) => sum + e.amount);
 
     // Money sent out from this wallet
     final transfersOut = await (_db.select(_db.walletTransfers)
           ..where((t) => t.fromWalletId.equals(walletId)))
         .get();
 
-    final totalOut = transfersOut.fold<double>(0, (sum, t) => sum + t.amount);
+    final totalOut = transfersOut.fold<double>(0, (num sum, t) => sum + t.amount);
 
     // Money received into this wallet
     final transfersIn = await (_db.select(_db.walletTransfers)
           ..where((t) => t.toWalletId.equals(walletId)))
         .get();
 
-    final totalIn = transfersIn.fold<double>(0, (sum, t) => sum + t.amount);
+    final totalIn = transfersIn.fold<double>(0, (num sum, t) => sum + t.amount);
 
     return wallet.initialBalance - totalExpenses - totalOut + totalIn;
   }

@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:expence_flow_pro/features/budget/repository/budget_repository.dart';
+import 'package:expence_flow_pro/features/recurring/repository/recurring_repository.dart';
 import 'package:get/get.dart';
 import '../controller/sync_controller.dart';
-import '../../budget/controller/budget_controller.dart';
 import '../../expense/repository/expense_repository.dart';
-import '../../recurring/controller/recurring_controller.dart';
 import '../../transfer/repository/transfer_repository.dart';
 import '../../wallet/repository/wallet_repository.dart';
 import '../../../database/app_database.dart';
