@@ -4,6 +4,18 @@ A personal finance tracker built with Flutter — offline-first, Firebase-synced
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/pic1.png" width="200"/>
+  <img src="screenshots/pic2.png" width="200"/>
+  <img src="screenshots/pic3.png" width="200"/>
+  <img src="screenshots/pic4.png" width="200"/>
+  <img src="screenshots/pic5.png" width="200"/>
+</p>
+
+---
+
 ## What it does
 
 Track expenses, manage multiple wallets, set monthly budgets, and automate recurring transactions. Everything works offline; changes sync to Firestore silently in the background when connectivity returns.
